@@ -1,0 +1,144 @@
+---
+title: "Statistical Inference Project"
+author: "Julie Foster"
+date: "October 12, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Part 1: Simulation Exercise
+ The first part of this project investigates the exponential 
+ distribution in 
+ R and compares it with the Central Limit Theorem. The exponential 
+ distribution is simulated in R with rexp(n, lambda) where 
+ lambda is the rate parameter. The mean of exponential distribution 
+ is 1/lambda and the standard deviation is also 1/lambda. Set 
+ lambda = 0.2 for all of the simulations. 
+```{r}
+lambda = 0.2
+mn = 1/lambda
+sd = 1/lambda
+```
+
+Here is the simulation for 1000 averages of 40 exponentials and set
+to the variable "exp_mns".
+
+```{r}
+n = 1000
+exp_mns = NULL
+for (i in 1:1000) exp_mns = c(exp_mns, mean(rexp(40, lambda)))
+```
+
+### 1. Show the sample mean and compare it to the theoretical mean of the  distribution.
+
+```{r}
+sample_mean <- mean(exp_mns)
+sample_mean
+
+pop_mean <- mn
+pop_mean
+```
+
+"sample_mean" is the mean of sample values collected.
+"population_mean"" is the mean of all the values in the population.
+As is shown here, the sample mean is a good estimate of the population mean.
+
+### 2. Show how variable the sample is (via variance) and compare it to the theoretical variance of the distribution.
+
+```{r}
+sample_var <- sd(exp_mns)/sqrt(n)
+sample_var
+
+pop_var <- sd^2/1000
+pop_var
+```
+
+Similarly to how the sample mean compares with the population mean, the sample variance is also an unbiased estimator of the population variance.
+
+### 3. Show that the distribution is approximately normal.
+
+```{r}
+data <- rexp(n, lambda)
+par(mfrow=c(1,2))
+hist(data, probability=TRUE, main="Random Exponentials", 
+     xlab="Exponentials", col="steelblue", las=1, breaks=30)
+lines(density(data), lwd=2)
+abline(v=pop_mean, lwd=3, col="red")
+hist(exp_mns, probability=TRUE, main="Averages of Random
+     Exponentials", xlab="Averages of Exponentials", col="coral",
+     las=1, breaks=30)
+lines(density(exp_mns), lwd=2)
+abline(v=sample_mean, lwd=3, col="red")
+```
+
+Here are two plots comparing the distribution of a thousand random 
+exponentials with the distribution of the averages of a thousand 
+random exponentials. The second plot shows the distribution of the
+averages, which illustrates that the distribution is approximately 
+normal, with the sample mean (shown as the red vertical line) as the 
+place where the distribution is clustering.
+
+
+
+# Part 2: Inferential Data Analysis 
+
+The second part of this project is the analysis of the ToothGrowth 
+dataset.  The sample size of this dataset is relatively small and 
+therefore t.tests will be performed to analyze the confidence
+intervals.
+
+First the dataset is loaded and some basic exploration of the data
+is performed:
+
+```{r}
+data(ToothGrowth)
+dim(ToothGrowth)
+head(ToothGrowth)
+summary(ToothGrowth)
+plot(ToothGrowth)
+```
+
+The data shows two supplement groups: OJ and VC, that do not look to
+be paired up.  Variance is the same in both groups because the
+sample size is the same, each with a size of 30.
+There are also three dosage groups: 0.5, 1.0, and 2.0.
+
+Looking at the results from the t.test function to show tooth length
+vs. supplement:
+
+```{r}
+t.test(len ~ supp, paired = FALSE, var.equal = TRUE, data = ToothGrowth)
+```
+
+Comparing tooth length by dose, looking at the different pairs of dose values.
+
+```{r}
+t.test(len~dose, data=ToothGrowth[ToothGrowth$dose==0.5|ToothGrowth$dose==1.0,])
+t.test(len~dose, data=ToothGrowth[ToothGrowth$dose==1.0|ToothGrowth$dose==2.0,])
+t.test(len~dose, data=ToothGrowth[ToothGrowth$dose==0.5|ToothGrowth$dose==2.0,])
+
+```
+## Conclusions
+Assumptions:  
+
+* the sample is representative of the total population  
+* the distribution of the sample means follows the Central Limit 
+Theorem  
+
+Results:    
+
+* For the tooth length vs supplement type:  
+    The confidence interval includes the value zero and the p-value is
+    shown as 0.06 which is greater than 0.05, so therefore the 
+    supplement types seem to have no impact on tooth length.   
+
+* For the tooth length vs dosage level:
+    The p-value of each of these tests are all essentially zero and
+    the confidence intervals of these tests do not cross zero, so 
+    therefore the dosage levels to appear to have an impact on 
+    tooth length.
+
